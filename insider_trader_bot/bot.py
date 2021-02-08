@@ -23,7 +23,7 @@ def main():
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('get_transactions', get_transactions))
     updater.start_polling()
-    updater.idle()
+    updater.idle() # comment
 
 
 if __name__ == '__main__':
