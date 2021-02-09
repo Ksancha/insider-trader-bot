@@ -1,8 +1,10 @@
 import requests
+from collections import defaultdict
 from user_agent import generate_user_agent
 
 
-from insider_trader_bot.finviz_connector.helpers import get_buy_transactions, get_transaction_records, get_sell_transactions
+from insider_trader_bot.finviz_connector.helpers import get_buy_transactions, get_transaction_records, get_sell_transactions, get_all_buy_transactions
+from insider_trader_bot.finviz_connector.objects import Transactions
 
 
 def get_ticker_transactions(ticker):
@@ -39,5 +41,38 @@ def get_total_value_amount(transactions):
     return val
 
 
-# buy_sells = get_ticker_transactions("TSLA")
-# pass
+def get_all_insider_buy_page():
+    return requests.get("https://finviz.com/insidertrading.ashx?tc=1", headers={"User-Agent": generate_user_agent()})
+
+
+def filter_transactions(transactions, min_val, ticker=None):
+    output = []
+    for tr in [Transactions.from_finviz_html_obj(t) for t in transactions]:
+        if ticker:
+            if tr.ticker == ticker.lower() and tr.value > min_val:
+                output.append(tr)
+        elif tr.value > min_val:
+            output.append(tr)
+    return output
+
+
+def _group_by_ticker(transactions):
+    output = defaultdict(list)
+    for tr in transactions:
+        output[tr.ticker].append(tr)
+    return output
+
+
+def get_buy_filtered_transactions(min_val=0, ticker=None):
+    response = get_all_insider_buy_page()
+
+    if response.status_code == 404:
+        raise ValueError(f"Could not access FinViz URL")
+    transactions = get_all_buy_transactions(response.content)
+    filtered_transactions = filter_transactions(transactions=transactions, min_val=min_val, ticker=ticker)
+    filtered_transactions = _group_by_ticker(filtered_transactions)
+    output = {}
+    for k in filtered_transactions.keys():
+        output[k] = sum(tr.value for tr in filtered_transactions[k])
+    return {k: v for k, v in sorted(output.items(), key=lambda item: item[1], reverse=True)}
+

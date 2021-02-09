@@ -1,9 +1,10 @@
 import os
 import logging
+from itertools import islice
 
 from telegram.ext import Updater, CommandHandler
 
-from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url
+from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -12,6 +13,7 @@ logging.basicConfig(
 
 
 def get_transactions(update, context):
+    """Get Buy/Sell transactions for a ticker"""
     chat_id = update.message.chat_id
     ticker = context.args[0].upper()
     try:
@@ -25,10 +27,22 @@ def get_transactions(update, context):
     context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
 
+def get_top_10(update, context):
+    chat_id = update.message.chat_id
+    try:
+        output = list(islice(get_buy_filtered_transactions().items(), 10))
+        output = "\n".join([str(x[0]).upper() + " : " + f"{x[1]:,}$" for x in output])
+        text = "Top 10 companies with recent insider buying activity: \n" + output
+    except ValueError:
+        text = f"Sorry, something went wrong. Try again later"
+    context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+
+
 def main():
     updater = Updater(os.getenv("BOT_SECRET_KEY"), use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler('get_transactions', get_transactions))
+    dp.add_handler(CommandHandler('top_10', get_top_10))
     updater.start_polling()
     updater.idle()
 

@@ -58,3 +58,8 @@ def get_total_buy_amount(transactions):
         val += get_value_amount(transaction)
     return val
 
+
+def get_all_buy_transactions(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    transactions = soup.find_all(lambda tag: tag.name == "tr" and len(tag.contents) == 10)
+    return transactions
