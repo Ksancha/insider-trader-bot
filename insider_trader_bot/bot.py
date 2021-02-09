@@ -19,7 +19,7 @@ def get_transactions(update, context):
         text = f"Total Buy/Sell According to FinViz: \n" \
                f"Buy: {transactions['Buy']:,}$\n" \
                f"Sell: {transactions['Sell']:,}$\n" \
-               f"More info <a href={build_ticker_url(ticker)}>here</a>"
+               f"More info <a href=\"{build_ticker_url(ticker)}\">here</a>"
     except ValueError:
         text = f"Sorry, looks like ticker {ticker} doesn't exist"
     context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
