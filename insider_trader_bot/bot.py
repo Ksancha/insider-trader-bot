@@ -19,8 +19,8 @@ def get_transactions(update, context):
     try:
         transactions = get_ticker_transactions(ticker)
         text = f"Total Buy/Sell According to FinViz: \n" \
-               f"Buy: {transactions['Buy']:,}$\n" \
-               f"Sell: {transactions['Sell']:,}$\n" \
+               f"Buy: ${transactions['Buy']:,}\n" \
+               f"Sell: ${transactions['Sell']:,}\n" \
                f"More info <a href=\"{build_ticker_url(ticker)}\">here</a>"
     except ValueError:
         text = f"Sorry, looks like ticker {ticker} doesn't exist"
@@ -31,7 +31,7 @@ def get_top_10(update, context):
     chat_id = update.message.chat_id
     try:
         output = list(islice(get_buy_filtered_transactions().items(), 10))
-        output = "\n".join([str(x[0]).upper() + " : " + f"{x[1]:,}$" for x in output])
+        output = "\n".join([str(x[0]).upper() + " : " + f"${x[1]:,}" for x in output])
         text = "Top 10 companies with recent insider buying activity: \n" + output
     except ValueError:
         text = f"Sorry, something went wrong. Try again later"
