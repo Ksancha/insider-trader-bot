@@ -9,10 +9,7 @@ from insider_trader_bot.finviz_connector.objects import Transactions
 
 def get_ticker_transactions(ticker):
 
-    response = requests.get(build_ticker_url(ticker), headers={"User-Agent": generate_user_agent()})
-
-    if response.status_code == 404:
-        raise ValueError(f"Invalid ticker {ticker}")
+    response = request_ticker(ticker)
 
     transactions = get_transaction_records(html_content=response.content, transaction_type=["buy", "sell"])
 
@@ -23,6 +20,14 @@ def get_ticker_transactions(ticker):
     total_sell = get_total_value_amount(sell_transactions)
 
     return {"Buy": total_buy, "Sell": total_sell}
+
+
+def request_ticker(ticker):
+    response = requests.get(build_ticker_url(ticker), headers={"User-Agent": generate_user_agent()})
+
+    if response.status_code == 404:
+        raise ValueError(f"Invalid ticker {ticker}")
+    return response
 
 
 def build_ticker_url(ticker):
