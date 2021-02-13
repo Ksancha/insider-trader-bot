@@ -1,6 +1,6 @@
+import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
-
 
 
 Base = declarative_base()
@@ -9,7 +9,7 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
 
-    username = Column(String)
+    username = Column(String(16))
     chat_id = Column(Integer, unique=True, primary_key=True, autoincrement=False)
 
 
@@ -17,7 +17,7 @@ class Stock(Base):
     __tablename__ = 'stocks'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String(16), unique=True)
 
 
 class UserStocks(Base):
@@ -29,7 +29,8 @@ class UserStocks(Base):
 
 
 if __name__ == '__main__':
-    pass
-    # folder = os.path.dirname(__file__)
-    # engine = create_engine("sqlite:////" + os.path.join(folder, "pythonsqlite.db"))
-    # Base.metadata.create_all(engine)
+    from sqlalchemy import create_engine
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    engine = create_engine(f"mysql://{user}:{password}@localhost/telegram_bot")
+    Base.metadata.create_all(engine)

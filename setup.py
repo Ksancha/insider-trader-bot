@@ -9,6 +9,7 @@ setup(name='insider_trader_bot',
       install_requirements=[
                 "user_agent",
                 "requests",
+                "sqlalchemy",
                 "beautifulsoup4",
                 "python-telegram-bot==13.2"
                 ]

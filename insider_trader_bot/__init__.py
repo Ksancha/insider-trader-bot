@@ -4,10 +4,13 @@ from sqlalchemy.orm import sessionmaker
 
 
 def init_session():
-    folder = os.path.dirname(__file__)
-    engine = create_engine("sqlite:////" + os.path.join(folder, "pythonsqlite.db"))
-
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    engine = create_engine(f"mysql://{user}:{password}@localhost/telegram_bot")
     Session = sessionmaker(bind=engine)
     Session.configure(bind=engine)
     session = Session()
     return session
+
+
+session = init_session()
