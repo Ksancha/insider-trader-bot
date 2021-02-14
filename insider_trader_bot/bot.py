@@ -65,6 +65,8 @@ def subscribe_to_stock(update, context):
     user = _add_user_to_db(username=update.effective_user.username, chat_id=chat_id)
     stock = _add_stock_to_db(ticker=ticker)
     _add_user_stocks_to_db(user=user, stock=stock)
+    text = f"You're now subscribed to {ticker}"
+    context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
 
 def unsubscribe_from_stock(update, context):
