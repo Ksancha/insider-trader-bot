@@ -1,6 +1,7 @@
+from datetime import datetime, date
 
 
-class Transactions:
+class Transaction:
 
     def __init__(
             self,
@@ -13,7 +14,8 @@ class Transactions:
             value,
             sec_date,
             date=None,
-            shares_total=None
+            shares_total=None,
+            today=None,
     ):
         self.ticker = ticker.lower()
         self.owner = owner
@@ -26,6 +28,7 @@ class Transactions:
         self.sec_date = sec_date
         self.date = date
         self.shares_total = shares_total
+        self.sec_date_dt = sec_date_to_datetime(sec_date, today)
 
     @property
     def value(self):
@@ -72,3 +75,15 @@ class Transactions:
             return self.value + other.value
         else:
             raise ValueError("Trying to add different transaction types")
+
+
+def sec_date_to_datetime(sec_date, today=None):
+    sec_date = datetime.strptime(sec_date, "%b %d %I:%M %p")
+    today = today or date.today()
+    sec_date_year = today.year
+    if sec_date.month > today.month:
+        sec_date_year -= 1
+    elif sec_date.month == today.month and sec_date.day > today.day:
+        sec_date_year -= 1
+    sec_date = sec_date.replace(year=sec_date_year)
+    return sec_date

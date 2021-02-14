@@ -1,13 +1,15 @@
 import os
 import logging
 from itertools import islice
+from datetime import datetime, timedelta, date
 
 from telegram.ext import Updater, CommandHandler
+from telegram import Bot
 
 from insider_trader_bot.db_helpers import _remove_user_stock_from_db, _add_user_to_db, _add_stock_to_db, \
     _add_user_stocks_to_db
 from insider_trader_bot.models import User, UserStocks, Stock
-from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions, request_ticker, build_ticker_href
+from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions, request_ticker, build_ticker_href, get_timerange_buy_transactions
 from insider_trader_bot import session
 
 logging.basicConfig(
@@ -92,6 +94,20 @@ def list_subscriptions(update, context):
     else:
         text = "\n".join([stock.name for stock in stocks])
     context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+
+
+def send_yesterday_buys():
+    bot = Bot(token=os.getenv("BOT_SECRET_KEY"))
+    # t2 = datetime.strptime("2021-02-13 00:00:00", "%Y-%m-%d %H:%M:%S").date()
+    t2 = date.today()
+    t1 = t2 - timedelta(days=1)
+    yesterday_buys = get_timerange_buy_transactions(t1=t1, t2=t2)
+    if yesterday_buys:
+        output = list(islice(yesterday_buys.items(), 10))
+        output = "\n".join([build_ticker_href(str(x[0]).upper()) + " : " + f"${x[1]:,}" for x in output])
+        text = f"Top 10 companies with insider buying activity on {t1}: \n" + output
+        for user in session.query(User).all():
+            bot.send_message(chat_id=user.chat_id, text=text, parse_mode="HTML")
 
 
 def main():

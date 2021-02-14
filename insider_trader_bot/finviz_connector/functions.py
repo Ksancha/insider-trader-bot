@@ -4,7 +4,7 @@ from user_agent import generate_user_agent
 
 
 from insider_trader_bot.finviz_connector.helpers import get_buy_transactions, get_transaction_records, get_sell_transactions, get_all_buy_transactions
-from insider_trader_bot.finviz_connector.objects import Transactions
+from insider_trader_bot.finviz_connector.objects import Transaction
 
 
 def get_ticker_transactions(ticker):
@@ -54,14 +54,26 @@ def get_all_insider_buy_page():
     return requests.get("https://finviz.com/insidertrading.ashx?tc=1", headers={"User-Agent": generate_user_agent()})
 
 
-def filter_transactions(transactions, min_val, ticker=None):
+def filter_transactions(transactions, min_val, ticker=None, t1=None, t2=None):
     output = []
-    for tr in [Transactions.from_finviz_html_obj(t) for t in transactions]:
+    for tr in [Transaction.from_finviz_html_obj(t) for t in transactions]:
         if ticker:
             if tr.ticker == ticker.lower() and tr.value > min_val:
                 output.append(tr)
         elif tr.value > min_val:
             output.append(tr)
+    return output
+
+
+def filter_transactions_by_time(transactions, t1, t2=None):
+    output = []
+    for tr in [Transaction.from_finviz_html_obj(t) for t in transactions]:
+        if tr.sec_date_dt.date() >= t1:
+            if t2:
+                if tr.sec_date_dt.date() <= t2:
+                    output.append(tr)
+            else:
+                output.append(tr)
     return output
 
 
@@ -85,3 +97,15 @@ def get_buy_filtered_transactions(min_val=0, ticker=None):
         output[k] = sum(tr.value for tr in filtered_transactions[k])
     return {k: v for k, v in sorted(output.items(), key=lambda item: item[1], reverse=True)}
 
+
+def get_timerange_buy_transactions(t1, t2):
+    response = get_all_insider_buy_page()
+    if response.status_code == 404:
+        raise ValueError(f"Could not access FinViz URL")
+    transactions = get_all_buy_transactions(response.content)
+    filtered_transactions = filter_transactions_by_time(transactions=transactions, t1=t1, t2=t2)
+    filtered_transactions = _group_by_ticker(filtered_transactions)
+    output = {}
+    for k in filtered_transactions.keys():
+        output[k] = sum(tr.value for tr in filtered_transactions[k])
+    return {k: v for k, v in sorted(output.items(), key=lambda item: item[1], reverse=True)}
