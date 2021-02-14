@@ -7,7 +7,7 @@ from telegram.ext import Updater, CommandHandler
 from insider_trader_bot.db_helpers import _remove_user_stock_from_db, _add_user_to_db, _add_stock_to_db, \
     _add_user_stocks_to_db
 from insider_trader_bot.models import User, UserStocks, Stock
-from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions, request_ticker
+from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions, request_ticker, build_ticker_href
 from insider_trader_bot import session
 
 logging.basicConfig(
@@ -45,7 +45,7 @@ def get_top(update, context):
     try:
         context.bot.send_message(chat_id=chat_id, text="Loading...", parse_mode="HTML")
         output = list(islice(get_buy_filtered_transactions().items(), top_count))
-        output = "\n".join([str(x[0]).upper() + " : " + f"${x[1]:,}" for x in output])
+        output = "\n".join([build_ticker_href(str(x[0]).upper()) + " : " + f"${x[1]:,}" for x in output])
         text = f"Top {top_count} companies with recent insider buying activity: \n" + output
     except ValueError:
         text = f"Sorry, something went wrong. Try again later"

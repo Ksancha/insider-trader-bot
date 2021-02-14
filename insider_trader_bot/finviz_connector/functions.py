@@ -30,6 +30,10 @@ def request_ticker(ticker):
     return response
 
 
+def build_ticker_href(ticker):
+    return f'<a href="https://finviz.com/quote.ashx?t={ticker}">{ticker}</a>'
+
+
 def build_ticker_url(ticker):
     return f"https://finviz.com/quote.ashx?t={ticker}"
 
