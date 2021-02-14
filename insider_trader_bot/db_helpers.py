@@ -27,6 +27,8 @@ def _update_db_user(chat_id, username=None, subscribed_to_buys=False):
         if subscribed_to_buys:
             user.subscribed_to_buys = subscribed_to_buys
         session.commit()
+    else:
+        user = _add_user_to_db(username=username, chat_id=chat_id, subscribed_to_buys=subscribed_to_buys)
     return user
 
 
