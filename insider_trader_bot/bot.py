@@ -97,8 +97,11 @@ def list_subscriptions(update, context):
 def subscribe_to_daily_buys(update, context):
     chat_id = update.message.chat_id
 
-    _update_db_user(username=update.effective_user.username, chat_id=chat_id, subscribed_to_buys=True)
-    text = f"You're now subscribed to daily buys"
+    user = _update_db_user(username=update.effective_user.username, chat_id=chat_id, subscribed_to_buys=True)
+    if user:
+        text = f"You're now subscribed to daily buys"
+    else:
+        text = "Oops, something went wrong."
     context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
 
