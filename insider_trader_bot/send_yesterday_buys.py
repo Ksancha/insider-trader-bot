@@ -18,7 +18,7 @@ def send_yesterday_buys():
         output = list(islice(yesterday_buys.items(), 10))
         output = "\n".join([finviz_fnc.build_ticker_href(str(x[0]).upper()) + " : " + f"${x[1]:,}" for x in output])
         text = f"Top 10 companies with insider buying activity on {t1}: \n" + output
-        for user in session.query(User).all():
+        for user in session.query(User).filter(User.subscribed_to_buys == 1).all():
             bot.send_message(chat_id=user.chat_id, text=text, parse_mode="HTML")
 
 

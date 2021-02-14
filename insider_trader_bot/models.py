@@ -1,6 +1,6 @@
 import os
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 
 
 Base = declarative_base()
@@ -11,6 +11,7 @@ class User(Base):
 
     username = Column(String(16))
     chat_id = Column(Integer, unique=True, primary_key=True, autoincrement=False)
+    subscribed_to_buys = Column(Boolean, default=False)
 
 
 class Stock(Base):

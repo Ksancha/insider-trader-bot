@@ -5,7 +5,7 @@ from itertools import islice
 from telegram.ext import Updater, CommandHandler
 
 from insider_trader_bot.db_helpers import _remove_user_stock_from_db, _add_user_to_db, _add_stock_to_db, \
-    _add_user_stocks_to_db
+    _add_user_stocks_to_db, _update_db_user
 from insider_trader_bot.models import User, UserStocks, Stock
 from insider_trader_bot.finviz_connector.functions import get_ticker_transactions, build_ticker_url, get_buy_filtered_transactions, request_ticker, build_ticker_href, get_timerange_buy_transactions
 from insider_trader_bot import session
@@ -94,6 +94,14 @@ def list_subscriptions(update, context):
     context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
 
+def subscribe_to_daily_buys(update, context):
+    chat_id = update.message.chat_id
+
+    _update_db_user(username=update.effective_user.username, chat_id=chat_id, subscribed_to_buys=True)
+    text = f"You're now subscribed to daily buys"
+    context.bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+
+
 def main():
     updater = Updater(os.getenv("BOT_SECRET_KEY"), use_context=True)
     dp = updater.dispatcher
@@ -102,6 +110,7 @@ def main():
     dp.add_handler(CommandHandler('subscribe', subscribe_to_stock))
     dp.add_handler(CommandHandler('unsubscribe', unsubscribe_from_stock))
     dp.add_handler(CommandHandler('list_subs', list_subscriptions))
+    dp.add_handler(CommandHandler('subscribe_daily_buys', subscribe_to_daily_buys))
     updater.start_polling()
     updater.idle()
 

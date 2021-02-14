@@ -10,11 +10,22 @@ def _remove_user_stock_from_db(user, stock):
     session.commit()
 
 
-def _add_user_to_db(username, chat_id):
+def _add_user_to_db(username, chat_id, subscribed_to_buys=False):
     user = session.query(User).filter_by(chat_id=chat_id).first()
     if user is None:
-        user = User(username=username, chat_id=chat_id)
+        user = User(username=username, chat_id=chat_id, subscribed_to_buys=subscribed_to_buys)
         session.add(user)
+        session.commit()
+    return user
+
+
+def _update_db_user(chat_id, username=None, subscribed_to_buys=False):
+    user = session.query(User).filter_by(chat_id=chat_id).first()
+    if user is not None:
+        if username:
+            user.username = username
+        if subscribed_to_buys:
+            user.subscribed_to_buys = subscribed_to_buys
         session.commit()
     return user
 
